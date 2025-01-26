@@ -1,0 +1,3 @@
+[submodule "Shot_Detection"]
+	path = Shot_Detection
+	url = https://github.com/PhucNguyenLamp/Shot_Detection.git
