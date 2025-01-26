@@ -4,3 +4,6 @@
 [submodule "workspace/TransNetV2"]
 	path = workspace/TransNetV2
 	url = https://github.com/soCzech/TransNetV2.git
+[submodule "workspace/Shot_Detection"]
+	path = workspace/Shot_Detection
+	url = https://github.com/PhucNguyenLamp/Shot_Detection.git
