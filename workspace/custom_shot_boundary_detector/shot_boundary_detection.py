@@ -10,6 +10,7 @@ import csv
 import time
 from tqdm import tqdm
 import pandas as pd
+import ffmpeg
 
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -166,6 +167,24 @@ def fetch_key_shots(key_shot_frames,video_path):
         else:
             continue
     video.release()
+
+def convert_seconds(seconds):
+    hours = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    remaining_seconds = seconds % 60  # Keep decimal precision if needed
+
+    return f"{hours:02}:{minutes:02}:{remaining_seconds:06.3f}"
+
+def convert_frame_file_to_seconds(shots_file_csv,video_path,output_path):
+    probe = ffmpeg.probe(video_path)
+    video_streams = [stream for stream in probe['streams'] if stream['codec_type'] == 'video']
+    frame_rate = eval(video_streams[0]['r_frame_rate'])
+    df = pd.read_csv(shots_file)
+    df["Start Time"] = df["Start"].apply(lambda x: x/frame_rate)
+    df["Start Time"] = df["Start Time"].apply(convert_seconds)
+    df["End Time"] = df["End"].apply(lambda x: x/frame_rate)
+    df["End Time"] = df["End Time"].apply(convert_seconds)
+    df.to_csv(output_path,index=False)
     
     
 if __name__=="__main__":
@@ -185,6 +204,7 @@ if __name__=="__main__":
     base_name = os.path.splitext(os.path.basename(video_path))[0]
     shot_tuples = list(process_shot_to_tuples(shots))  # Convert generator to list
     write_to_csv(shot_tuples, base_name+".csv")
+    convert_frame_file_to_seconds(base_name+".csv",video_path,base_name+".csv")
     if args.write_frames:
         overlay_markers(video_path, shot_tuples, base_name)
     if args.key_shots:
